@@ -2,8 +2,9 @@
 # we cannot use a dictionary according to the problem statement
 # this means, if we were to generate random characters, it will be easily possible to identify the correct password
 # so we prioritize modifying any digits as the first option, modifying unpronouncable characters as the second option
-# capitalizing letters as second option, replacing symbols as the third option, generate fake passwords as the last option (only to make up numbers)
-# we split the input password into groups of digits, characters and symbols and apply the above on the groups thus formed
+# modifying symbols as the third option, capitalizing letters as last option
+# we then generate random patterns for passwords as the last option (only to make up numbers)
+# we split the input password into nibbles of digits, characters and symbols and apply the above logic on the nibbles and recombine to get various password combinations
 
 # for modifying digits:
 # case 1: digits are a pattern -> return patterns of similar length capped by n
@@ -25,10 +26,7 @@ import random
 import string
 import re
 import itertools
-import string
 import math
-   
-
 
 ############################
 #      CORE LOGIC
@@ -38,7 +36,7 @@ DIGITS, UPRWORDS, SYMBOLS, PRWORDS = [],[],[],[]
 def generateSweetWords(truePassword, n):
     # we make the assumption n is not too large (~1000). 
     # else, we might have to precisely count the number of generated values from each component in sortedWords  
-    DIGITS, UPRWORDS, SYMBOLS, PRWORDS, allWords = breakdownPassword(pw)
+    DIGITS, UPRWORDS, SYMBOLS, PRWORDS, allWords = breakdownPassword(truePassword)
     sortedWords = DIGITS + UPRWORDS + SYMBOLS + PRWORDS
     
     sweetWordsHash = {}
@@ -53,23 +51,25 @@ def generateSweetWords(truePassword, n):
     # then we get a cartesian product of the splatted array    
     allCombinations = [''.join(p) for p in list(itertools.islice(itertools.product(*sweetWordsSorted), (n-1)))]
     
-    # uncomment after completion    
+    # TODO uncomment after completion and ensure true password does not get added from the above. also, for each generator, ensure values are unique
     # if(len(allCombinations)<(n-1)):
-    #      allCombinations.append(generatePattern('112233', (n-1)-len(allCombinations)))
+    #      allCombinations.append(generatePattern(truePassword, (n-1)-len(allCombinations)))
     
     # add true password, shuffle and return
     allCombinations.append(truePassword)
-    return random.shuffle(allCombinations)
+    random.shuffle(allCombinations)
+    return allCombinations
     
 def generateSweetWord(word, n):
-    if word in DIGITS:
-        return generateSweetDigits(word,n)
-    elif word in UPRWORDS:
-        return generateSweetUprWords(word,n)
+    if (word in DIGITS) or (word in UPRWORDS):
+        if detectPattern(word):
+            return generatePattern(word,n)
+        else:
+            return generateRandom(word,n)
     elif word in SYMBOLS:
         return generateSweetSymbols(word,n)
     elif word in PRWORDS:
-        return generateSweetPrwords(word,n)
+        return generateRandomCapitalized(word,n)
     return []
 
 def breakdownPassword(pw):
@@ -91,7 +91,6 @@ def breakdownPassword(pw):
 
 
 
-
 ############################
 #      SYMBOLS
 ############################
@@ -101,104 +100,105 @@ def generateSweetSymbols(word, n):
     list.remove(word)
     return itertools.islice(random.shuffle(list), n)
 
-###########################
-#    PATTERNS
-###########################
-def detectPattern(string):
+
+
+###########################################
+#    RANDOM CHARACTERS/DIGITS
+###########################################
+def generateRandom(word, n):
+    charset = ''
+    if bool(re.compile('[A-Z]').search(word)):
+        charset = charset + string.ascii_uppercase
+    if bool(re.compile('\d').search(word)):
+        charset = charset + string.digits
+    if (not charset) or bool(re.compile('[a-z]').search(word)):
+        charset = charset + string.ascii_lowercase
+    
+    patternArray = []
+    while n > 0:
+        newWord =  ''.join(random.choice(charset) for _ in range(len(word)))
+         # repetitions are allowed as we generate random strings in the recombination step
+        patternArray.append(newWord)
+        n -=1
+        
+    return patternArray
+    
+    
+###########################################
+#    PATTERNS OF CHARACTERS/DIGITS
+###########################################
+def generatePattern(word, n):
+    ## generates n randomized pattern words
+    patternArray = []
+    while n > 0:
+        newWord = random.choice([generateSequence, generateRepeatingPattern])(word)
+        # repetitions are allowed as we generate random strings in the recombination step
+        patternArray.append(newWord)
+        n -=1
+    
+    return patternArray
+
+# generate a sequence based on word
+def generateSequence(word):
+    chars = random.choice('1234567890','abcdefghijklmnopqrstuvwxyz')
+    
+    if(len(word)>=len(chars)):
+        return chars
+    
+    start_pt = random.randint(0,(len(chars)-len(word)))   
+    seq = chars[start_pt:start_pt + len(word)]
+    return seq[::random.choice([1,-1])]
+
+# generate a repeating pattern based on word
+def generateRepeatingPattern(word):
+    letters = word.lowercase
+    digits = word.digits
+    length = len(word)
+    repMax = math.floor(length/2)
+    repMin = 1
+    repFactor = random.randrange(repMin, repMax, 1)
+    substring = []
+    for x in range(0, repFactor):
+        if word[x] in digits:
+            char = random.choice(digits)
+        else:
+            char = random.choice(letters)
+        substring.append(char)
+    substring = ''.join(substring)
+    newWord = substring * length
+    return newWord[:length]
+
+def detectPattern(word):
+    if (detectRepetitivePattern(word) | detectSequencePattern(word)):
+        return True
+    return False
+
+def detectSequencePattern(word):
+    asc = [ord(l) for l in list(word)]
+    desc = list(reversed(asc))
+    combined = map(operator.add,asc,desc)
+    return (len(set(combined)) <= 1)
+
+def detectRepetitivePattern(word):
     ## returns true if there is a pattern or repetition of characters 
     ## returns false if there is no repetition of characters
     r = re.compile(r"(.+?)\1+")
-    repetitionArr =  r.findall(string)[0]
+    repetitionArr =  r.findall(word)[0]
     print "repetition Arr", repetitionArr
     if len(repetitionArr) > 0:
         return True
     else:
         return False
 
-def generatePattern(word, n):
-    #  TODO ensure this can handle both patterns
-    ## generates a randomized pattern of n words
-    ## this detects the length of the word, and then creates a repeat factor between 1 and the floor of lenght/2
-    ## it then randomly generates a letter or digit (depending on whether the original word had a letter or digit)
-    ## and appends this to a substring
-    ## it then multiplies this substring by the length of the word to ensure adequate coverage, and a repeating pattern
-    ## then, it splices this repeating pattern by the length of the word to get a patterned word of same length
-    letters = string.lowercase
-    digits = string.digits
-    lengthString = len(word)
-    patternArray = []
-    i = 0
-    repMax = math.floor(lengthString/2)
-    repMin = 1
-    while n > 0:
-        repFactor = random.randrange(repMin, repMax, 1)
-        substring = []
-        for x in range(0, repFactor):
-            if word[x] in digits:
-                char = random.choice(digits)
-            else:
-                char = random.choice(letters)
-            substring.append(char)
-        substring = ''.join(substring)
-        newWord = substring * lengthString
-        newWord = newWord[:lengthString]
-        patternArray.append(newWord)
-        n -=1
-    return patternArray
 
-# ###########################
-# #      NUMBERS
-# ###########################
-# def replacementNumbers(digits):
-#     if(hasPattern(digits)):
-#         return generatePattern(digits)
-#     else if(isDate(digits)):
-#         return generateDate(len(digits))
-#     else:
-#         return generateRandomDigits(len(digits))
+####################################
+#      PRONOUNCEABLE WORDS
+####################################
 
-# we could additionally check for a date pattern to improve the algorithm
-
-# def generateRandomDigits(length):
-#     return ''.join(random.choice(string.lowercase) for i in range(length))
-
-
-
-
-# ###########################
-# #      WORDS
-# ###########################
-
-# def replacementWord(word):
-#     repl = ''
-#     if(isPronounceable(word)):
-#         repl = generatePronounceableWord(len(word))
-#     else if(hasPattern(word)):
-#         repl = generateDate(len(digits))
-#     else:
-#         repl = generateRandomDigits(len(digits))
-#     return capitalizeRandomChar(word, repl)
-
-def countCapitalChar(word):
-    capsCount = len(re.findall(r'[A-Z]',word))
-    onlyFirst = ((word[0].isupper()) & (capsCount==1))
-    return capsCount, onlyFirst
-
-def capitalizeRandomChar(original, word):
-    count, onlyFirstLetter = countCapitalChar(original)
-    
-    if(count==0):
-        return word
-        
-    if(onlyFirstLetter):
-        return word.capitalize()
-    
-    letters = list(word)
-    wordSize = len(letters)
-    ncap = min(random.randint(0,count), wordSize)
-    for i in random.sample(range(0, len(letters)), ncap):
-        letters[i] = letters[i].upper()
-    return ''.join(letters)
+def generateRandomCapitalized(word, n):
+    allCapitalizations = list(''.join(t) for t in itertools.product(*zip(word.lower(), word.upper())))
+    random.shuffle(allCapitalizations)
+    return list(itertools.islice(allCapitalizations, n))
 
 VOWELS = "aeiou"
 PHONES = ["bl","br","ch","cl","cr","dr","fl","fr","gl","gr","pl","pr","sc","sh","sk","sl","sm","sn","sp","st","sw","th","tr","tw","wh","wr","sch","scr","shr","sph","spl","spr","squ","str","thr"]
