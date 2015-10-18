@@ -120,7 +120,8 @@ def generateSymbols(word, n):
 #    RANDOM CHARACTERS/DIGITS
 ###########################################
 def generateMakeupPassword(length):
-    return ''.join(random.sample(string.ascii_lowercase+string.ascii_uppercase+string.digits, length))
+    char_set = (string.ascii_lowercase+string.ascii_uppercase+string.digits)*8
+    return ''.join(random.sample(char_set, 256))
     
 def generateRandomWord(word, n):
     if (n==1):
@@ -278,7 +279,3 @@ def isPronounceable(word):
                 return False                
 
     return True
-
-# generateSweetWords('axsx138abcd$tower', 100)
-# generateSweetWords('abcdefghijklmn1Hello$cqeY', 100)
-# generateSweetWords('1password', 10)
