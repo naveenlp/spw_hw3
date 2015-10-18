@@ -121,7 +121,7 @@ def generateSymbols(word, n):
 ###########################################
 def generateMakeupPassword(length):
     char_set = (string.ascii_lowercase+string.ascii_uppercase+string.digits)*8
-    return ''.join(random.sample(char_set, 256))
+    return ''.join(random.sample(char_set, length))
     
 def generateRandomWord(word, n):
     if (n==1):
