@@ -3,7 +3,7 @@
 # this means, if we were to generate random characters, it will be easily possible to identify the correct password
 # so we prioritize modifying any digits as the first option, modifying unpronouncable characters as the second option
 # modifying symbols as the third option, capitalizing letters as last option
-# we then generate random patterns for passwords as the last option (only to make up numbers)
+# finally, we generate random patterns for passwords if required to make up numbers
 # we split the input password into nibbles of digits, characters and symbols and apply the above logic on the nibbles and recombine to get various password combinations
 
 # for modifying digits:
@@ -38,8 +38,12 @@ def generateSweetWords(truePassword, n):
     sortedWords = digits + uprwords + symbols + prwords
     
     sweetWordsHash = {}
+    # this variable calculates additional number of random variables we need to get to around n sweetwords    
+    additional_n = n
     for w in sortedWords:
-        sweetWordsHash[w] = generateSweetWord(w, n, digits, uprwords, symbols, prwords)
+        sweetNibbles = generateSweetNibble(w, additional_n, digits, uprwords, symbols, prwords)
+        sweetWordsHash[w] = sweetNibbles
+        additional_n = int(math.ceil(additional_n/len(sweetNibbles)))
                 
     # to recombine, first we generate an array of arrays of the generated sweetword bits
     sweetWordsSorted = []
@@ -50,27 +54,29 @@ def generateSweetWords(truePassword, n):
     prod = [''.join(p) for p in  list(itertools.product(*sweetWordsSorted))]
     # shuffle order of the product
     random.shuffle(prod)
-    # remove true password from generated passwords
+    # remove true password from generated passwords before taking 
     prod = list(filter((truePassword).__ne__, prod))
     allCombinations = list(itertools.islice(prod, (n-1)))
     
-    # If repetitions of the true password are added here, ignore them as they are low probability
-    if(len(allCombinations)<(n-1)):
-         allCombinations.extend(generateRandomWord(truePassword, (n-1)-len(allCombinations)))
+    # make up any shortfall (can potentially be caused by repeated passwords in the product) 
+    while(len(allCombinations)<(n-1)):
+        new_pw = generateMakeupPassword(len(truePassword))
+        if new_pw != truePassword:
+            allCombinations.append(new_pw)
     
     # add true password, shuffle and return
     allCombinations.append(truePassword)
     random.shuffle(allCombinations)
     return allCombinations
     
-def generateSweetWord(word, n, digits, uprwords, symbols, prwords):
+def generateSweetNibble(word, n, digits, uprwords, symbols, prwords):
     if (word in digits) or (word in uprwords):
         if detectPattern(word):
             return generatePattern(word,n)
         else:
             return generateRandomWord(word,n)
     elif word in symbols:
-        return generateSweetSymbols(word,n)
+        return generateSymbols(word,n)
     elif word in prwords:
         return generateRandomCapitalized(word,n)
     return []
@@ -97,20 +103,28 @@ def breakdownPassword(pw):
 ############################
 #      SYMBOLS
 ############################
-def generateSweetSymbols(word, n):
+def generateSymbols(word, n):
+    if n==1:
+        return [word]
     # assume there's only 1 symbol. can improve algorithm by using multiple symbols
     symbolList = ['~', '!', '@', '#', '$', '%', '^', '&', '*', '?', '<', '>', ',', '.', '(', ')', '_', '-', '+', '=', '{', '}', '[', ']', '\'', '\\', ':', ';', '"', '/', '|', '`']
     symbolList.remove(word[0])
     outputList = symbolList[0:10]
     random.shuffle(outputList)
-    return itertools.islice(outputList, n)
+    outputList.insert(0, word)
+    return list(itertools.islice(outputList, n))
 
 
 
 ###########################################
 #    RANDOM CHARACTERS/DIGITS
 ###########################################
+def generateMakeupPassword(length):
+    return ''.join(random.sample(string.ascii_lowercase+string.ascii_uppercase+string.digits, length))
+    
 def generateRandomWord(word, n):
+    if (n==1):
+        return [word]
     charset = ''
     if bool(re.compile('[A-Z]').search(word)):
         charset = charset + string.ascii_uppercase
@@ -120,12 +134,16 @@ def generateRandomWord(word, n):
         charset = charset + string.ascii_lowercase
     
     charArray = []
-    while n > 0:
+    while n > 1:
         newWord =  ''.join(random.choice(charset) for _ in range(len(word)))
          # repetitions are allowed as we generate random strings in the recombination step
         charArray.append(newWord)
         n -=1
-        
+    # this ensures only unique values are returned, as otherwise there are infinite patterns possible    
+    charArray = list(set(charArray))
+    if word in charArray:
+        charArray.remove(word)
+    charArray.insert(0, word)
     return charArray
     
     
@@ -133,14 +151,20 @@ def generateRandomWord(word, n):
 #    PATTERNS OF CHARACTERS/DIGITS
 ###########################################
 def generatePattern(word, n):
-    ## generates n randomized pattern words
+    if n==1:
+        return [word]
+    # generates n randomized pattern words
     patternArray = []
-    while n > 0:
+    while n > 1:
         newWord = random.choice([generateSequence, generateRepeatingPattern])(word)
-        # repetitions are allowed as we generate random strings in the recombination step
+        # repetitions are allowed to avoid possible infinite loop
         patternArray.append(newWord)
         n -=1
-    
+    # this ensures only unique values are returned, as otherwise there are infinite patterns possible    
+    patternArray = list(set(patternArray))
+    if word in patternArray:
+        patternArray.remove(word)
+    patternArray.insert(0, word)
     return patternArray
 
 # generate a sequence based on word
@@ -191,8 +215,8 @@ def detectSequencePattern(word):
     return (len(set(combined)) <= 1)
 
 def detectRepetitivePattern(word):
-    ## returns true if there is a pattern or repetition of characters 
-    ## returns false if there is no repetition of characters
+    # returns true if there is a pattern or repetition of characters 
+    # returns false if there is no repetition of characters
     r = re.compile(r"(.+?)\1+").findall(word)
     if(len(r)==0):
         return False
@@ -208,9 +232,11 @@ def detectRepetitivePattern(word):
 ####################################
 
 def generateRandomCapitalized(word, n):
+    if n==1:
+        return [word]
     allCapitalizations = list(''.join(t) for t in itertools.product(*zip(word.lower(), word.upper())))
     random.shuffle(allCapitalizations)
-    wordList = list(itertools.islice(allCapitalizations, n-1))
+    wordList = list(itertools.islice(allCapitalizations, (n-1)))
     wordList.insert(0,word)
     return wordList
 
@@ -253,4 +279,6 @@ def isPronounceable(word):
 
     return True
 
-generateSweetWords('abcdefghijklmn12345Hello$cqeY', 30)
+# generateSweetWords('axsx138abcd$tower', 100)
+# generateSweetWords('abcdefghijklmn1Hello$cqeY', 100)
+# generateSweetWords('1password', 10)
