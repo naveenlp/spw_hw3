@@ -49,8 +49,6 @@ def sweetword_final_set2(weak_pw_list, input_password, n):
     random.shuffle(sweetwords)
     return sweetwords
     
-def sweetword_final_set3(long_pw_list,input_password):
-    return[]
 
 def main(input_filename,input_password):
     short_pw_list = read_password_files(input_filename,100)
@@ -62,7 +60,7 @@ def main(argv):
     input_filename = argv[2]
     output_filename = argv[3]
     
-    algo = 1
+    algo = 3
     if l>4:
         algo = int(argv[4])
             
@@ -72,7 +70,8 @@ def main(argv):
         weak_pw_list = read_password_files("../rockyou-withcount.txt",100)
         print sweetword_final_set2(weak_pw_list,"Mickey",n)
     else:
-        print 'implement algo 3'
+        weak_pw_list = read_password_files("../rockyou-withcount.txt")
+        print sweetword_final_set2(weak_pw_list,"!lilflaka",n)
 
 
 if __name__ == "__main__":
