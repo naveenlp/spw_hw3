@@ -70,8 +70,6 @@ def random_markov_password(length):
         i = i +1
     return p
     
-print random_markov_letter('f')
-print random_markov_password(6)
 
     
 
