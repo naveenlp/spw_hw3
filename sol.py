@@ -47,7 +47,6 @@ def sweetword_final_set2(weak_pw_list, input_password, n):
         sweetwords += other_sweetwords
     sweetwords.append(input_password)
     random.shuffle(sweetwords)
-    print len(sweetwords)
     return sweetwords
     
 def sweetword_final_set3(long_pw_list,input_password):
