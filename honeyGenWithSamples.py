@@ -5,12 +5,13 @@ Created on Sun Oct 18 22:06:10 2015
 @author: nghiatran
 """
 import random
-# Generate maximum n weak honeywords, excluding the input password
+## Generate maximum n weak honeywords, excluding the input password
 def weak_sweetwords(weak_pw_list, input_password, n):
     n = min(9,n)
     sweetwords =[] 
     i=0
     while i < 100:
+        ## find a case-insensitive match in the list. 
         if weak_pw_list[i][1].lower() == input_password.lower():
             break;
         i = i+1
