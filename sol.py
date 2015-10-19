@@ -50,10 +50,6 @@ def sweetword_final_set2(weak_pw_list, input_password, n):
     return sweetwords
     
 
-def main(input_filename,input_password):
-    short_pw_list = read_password_files(input_filename,100)
-    return sweetword_final_set2(short_pw_list,input_password,20)
-
 def main(argv):
     l = len(argv)
     n = int(argv[1])
@@ -71,7 +67,7 @@ def main(argv):
         print sweetword_final_set2(weak_pw_list,"Mickey",n)
     else:
         weak_pw_list = read_password_files("../rockyou-withcount.txt")
-        print sweetword_final_set2(weak_pw_list,"!lilflaka",n)
+        print sweetword_final_set2(weak_pw_list,"858585",n)
 
 
 if __name__ == "__main__":
