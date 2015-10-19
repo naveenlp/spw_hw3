@@ -60,8 +60,9 @@ def generateBaseSweetWords(truePassword, n):
     prod = list(filter((truePassword).__ne__, prod))
     allCombinations = list(itertools.islice(prod, n))
     
+    
     # make up any shortfall (can potentially be caused by repeated passwords in the product) 
-    while(len(allCombinations)<=n):
+    while(len(allCombinations)<n):
         new_pw = generateMakeupPassword(len(truePassword))
         if new_pw != truePassword:
             allCombinations.append(new_pw)

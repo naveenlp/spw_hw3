@@ -36,6 +36,7 @@ def sweetword_final_set2(weak_pw_list, input_password, n):
     sweetwords = weak_sweetwords(weak_pw_list,input_password,n-1)
     if len(sweetwords) ==0:
         sweetwords = generateBaseSweetWords(input_password,n)
+        sweetwords.append(input_password)
     else:
         for i in range(len(sweetwords), n-1):
             l = random.randint(7,10)
@@ -61,8 +62,8 @@ def main(argv):
     if l>4:
         algo = int(argv[4])
             
-    if algo == 1:
-        print sweetword_final_set1("mickey",n)
+    if algo == 1:        
+        print sweetword_final_set1("yellow",n-1)
     elif algo == 2:
         weak_pw_list = read_password_files("../rockyou-withcount.txt",100)
         print sweetword_final_set2(weak_pw_list,"mickey",n)
