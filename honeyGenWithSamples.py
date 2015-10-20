@@ -13,7 +13,7 @@ def weak_sweetwords(weak_pw_list, input_password, n):
     i=0
     while i < list_len-1:
         ## find a case-insensitive match in the list. 
-        if len(weak_pw_list[i]) == 2 and weak_pw_list[i][1].lower() == input_password.lower():
+        if len(weak_pw_list[i]) == 2 and input_password.find(weak_pw_list[i][1]) != -1:
             break;
         i = i+1
         
@@ -25,12 +25,12 @@ def weak_sweetwords(weak_pw_list, input_password, n):
     if i<=5:
         for j in range(random.randint(0,5), n):
             if i!= j:
-                sweetwords.append(weak_pw_list[j][1])
+                sweetwords.append(input_password.replace(weak_pw_list[i][1],weak_pw_list[j][1]))
     else:
         upper_position_bound = random.randint(i,min(i+4,list_len-1))
         for j in range(upper_position_bound-n+1, upper_position_bound+1):
             if i!= j:
-                sweetwords.append(weak_pw_list[j][1])
+                sweetwords.append(input_password.replace(weak_pw_list[i][1],weak_pw_list[j][1]))
     
     random.shuffle(sweetwords)
     return sweetwords

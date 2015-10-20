@@ -64,10 +64,10 @@ def main(argv):
         print sweetword_final_set1("yellow",n-1)
     elif algo == 2:
         weak_pw_list = read_password_files("../rockyou-withcount.txt",100)
-        print sweetword_final_set2(weak_pw_list,"Mickey",n)
+        print sweetword_final_set2(weak_pw_list,"mickey12",n)
     else:
         weak_pw_list = read_password_files("../rockyou-withcount.txt")
-        print sweetword_final_set2(weak_pw_list,"858585",n)
+        print sweetword_final_set2(weak_pw_list,"summer05",n)
 
 
 if __name__ == "__main__":
