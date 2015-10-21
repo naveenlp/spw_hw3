@@ -42,8 +42,7 @@ def sweetword_final_set2(weak_pw_list, input_password, n):
     sweetwords = []
     sweetwords = weak_sweetwords(weak_pw_list,input_password,n-1)
     if len(sweetwords) ==0:
-        sweetwords = generateBaseSweetWords(input_password,n)
-        sweetwords.append(input_password)
+        sweetwords = generateBaseSweetWords(input_password,n-1)
     else:
         k = math.ceil((n-len(sweetwords))/(len(sweetwords)))+1
         other_sweetwords = []
