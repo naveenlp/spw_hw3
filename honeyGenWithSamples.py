@@ -11,7 +11,10 @@ def weak_sweetwords(weak_pw_list, input_password, n):
     n = min(9,n)
     sweetwords =[] 
     i=0
-    while i < list_len-1:
+    
+    while True:
+        if i >= list_len:
+            break;
         ## find a case-insensitive match in the list. 
         if len(weak_pw_list[i]) == 2 and input_password.find(weak_pw_list[i][1]) != -1:
             break;

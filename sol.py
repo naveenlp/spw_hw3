@@ -25,6 +25,13 @@ def read_password_files(filename, length=None):
     f.close()
     return pw_list
 
+def write_list_to_file(f,l):
+    line =""
+    for w in l:
+        line += w + ", "
+    line = line.rstrip(", ")
+    f.write(line+"\n")
+    
 def sweetword_final_set1(input_password,n):
    sweetwords = generateBaseSweetWords(input_password,n-1)
    sweetwords.append(input_password)
@@ -57,17 +64,25 @@ def main(argv):
     output_filename = argv[3]
     
     algo = 3
+
     if l>4:
         algo = int(argv[4])
-            
+    input_file = open(input_filename,'r')
+    output_file = open(output_filename,'w')
     if algo == 1:        
-        print sweetword_final_set1("yellow",n-1)
+        for line in input_file:
+            line = line.rstrip('\n')
+            write_list_to_file(output_file, sweetword_final_set1(line,n))            
     elif algo == 2:
         weak_pw_list = read_password_files("../rockyou-withcount.txt",100)
-        print sweetword_final_set2(weak_pw_list,"mickey12",n)
+        for line in input_file:
+            line = line.rstrip('\n')
+            write_list_to_file(output_file, sweetword_final_set2(weak_pw_list,line,n))
     else:
         weak_pw_list = read_password_files("../rockyou-withcount.txt")
-        print sweetword_final_set2(weak_pw_list,"summer05",n)
+        for line in input_file:
+            line = line.rstrip('\n')
+            write_list_to_file(output_file, sweetword_final_set2(weak_pw_list,line,n))
 
 
 if __name__ == "__main__":
