@@ -267,7 +267,6 @@ def isPronounceable(word):
                 consecutiveVowels += 1
             else:
                 consecutiveConsonents +=1
-
             if consecutiveVowels >= 3 or consecutiveConsonents > 3:
                 return False
 

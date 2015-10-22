@@ -48,9 +48,11 @@ def sweetword_final_set2(weak_pw_list, input_password, n):
         other_sweetwords = []
         for sw in sweetwords:
             other_sweetwords += generateBaseSweetWords(sw,k)
-            random.shuffle(other_sweetwords)
-            other_sweetwords = other_sweetwords[0:(n-1-len(sweetwords))]
+        other_sweetwords += generateBaseSweetWords(input_password, k)
+        random.shuffle(other_sweetwords)
+        other_sweetwords = other_sweetwords[0:(n-1-len(sweetwords))]
         sweetwords += other_sweetwords
+
     sweetwords.append(input_password)
     random.shuffle(sweetwords)
     return sweetwords
@@ -73,12 +75,12 @@ def main(argv):
             line = line.rstrip('\n')
             write_list_to_file(output_file, sweetword_final_set1(line,n))            
     elif algo == 2:
-        weak_pw_list = read_password_files("../rockyou-withcount.txt",100)
+        weak_pw_list = read_password_files("rockyou-withcount.txt",100)
         for line in input_file:
             line = line.rstrip('\n')
             write_list_to_file(output_file, sweetword_final_set2(weak_pw_list,line,n))
     else:
-        weak_pw_list = read_password_files("../rockyou-withcount.txt")
+        weak_pw_list = read_password_files("rockyou-withcount.txt")
         for line in input_file:
             line = line.rstrip('\n')
             write_list_to_file(output_file, sweetword_final_set2(weak_pw_list,line,n))
