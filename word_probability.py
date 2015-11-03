@@ -34,10 +34,12 @@ for c1 in character_set:
 
 
 def bigram_based_likelihood(pw):
-    likelihood = first_letters_freqs[pw[0]]
-    for i in range(1,len(pw)):
-        likelihood *= conditional_probs[pw[i-1]][pw[i]]
+    lowercased_pw = pw.lower()
+    likelihood = first_letters_freqs[lowercased_pw[0]]
+    for i in range(1,len(lowercased_pw)):
+        likelihood *= conditional_probs[lowercased_pw[i-1]][lowercased_pw[i]]
     ##todo: need to multiply with the likelihood of the given length
+    ## likelihood *= prob(a password's length is len(pw))
     return likelihood
     
     
