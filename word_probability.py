@@ -12,6 +12,13 @@ from string import ascii_lowercase, digits, punctuation
 ## Define character set
 character_set = ascii_lowercase + digits + punctuation
 
+## Frequencies of password lengths. 
+## These numbers can be obtained from passwords in the Rockyou database.
+## A caveat is that Rockyou allowed for passwords with length less than 8.
+## This does not reflect the current industry standard.
+###########################
+length_freqs = {6: 0.05, 7: 0.05, 8: 0.3, 9: 0.2, 10: 0.1, 11: 0.1, 12: 0.1, 13: 0.1}
+
 first_letters_file=open('first_letters.p', 'r')
 bigrams_file=open('bigrams.p', 'r')
 
@@ -38,8 +45,7 @@ def bigram_based_likelihood(pw):
     likelihood = first_letters_freqs[lowercased_pw[0]]
     for i in range(1,len(lowercased_pw)):
         likelihood *= conditional_probs[lowercased_pw[i-1]][lowercased_pw[i]]
-    ##todo: need to multiply with the likelihood of the given length
-    ## likelihood *= prob(a password's length is len(pw))
+    likelihood *= length_freqs[len(lowercased_pw)]
     return likelihood
     
     
